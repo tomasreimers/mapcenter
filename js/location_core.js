@@ -7,7 +7,7 @@ var location_core = new (function () {
 
 	// updates location from server and invoke callback
 	self.update = function (callback) {
-
+		
 	};
 
 });
