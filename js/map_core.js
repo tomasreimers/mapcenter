@@ -5,28 +5,30 @@ var map_core = new (function () {
 	// Stores the map
 	self.map = undefined;
 
-	// Keeps references to all points on the map
-	self.points = [];
-
 	// Keeps reference to all points objects in the map
 	self.map_points = [];
 
-	// Adds a point to the array and places a marker on the map  
-	self.add_point = function (point) {
-		// add to map
-		if (typeof(map) !== undefined) {
-			self.add_point_to_map(point);
-		}
-		// store point
-		self.points.push(point);
+	// Creates an icon to represent you 
+	self.point_symbol = function (opacity) {
+		return {
+			strokeColor: "#FF0000",
+			fillColor: "#FF6666",
+			fillOpacity: opacity,
+			path: google.maps.SymbolPath.CIRCLE,
+			scale: 4,
+			strokeWeight: 1,
+			strokeOpacity: opacity
+		};
 	};
 
-	// Helper function to add points to map
-	self.add_point_to_map = function (point) {
+	// Adds a point to the array and places a marker on the map  
+	self.add_point = function (point) {
+		var lifespan = (data_core.lifespan + point.timestamp - (new Date()).getTime()) / data_core.lifespan;
 		var marker_center = new google.maps.LatLng(point.lat, point.lng);
 		var marker = new google.maps.Marker({
 			map: self.map,
-			position: marker_center
+			position: marker_center,
+			icon: self.point_symbol(lifespan)
 		});
 		self.map_points.push(marker);
 	};
@@ -37,7 +39,6 @@ var map_core = new (function () {
 			map_point.setMap(null);
 		});
 		self.map_points = [];
-		self.points = [];
 	};
 
 	// Centers the map on a latitude and longitude
@@ -53,7 +54,13 @@ var map_core = new (function () {
 			zoom: 16,
 			center: new google.maps.LatLng(42.374481,-71.117218)
 		});
-		// add all already existing points
-		_.each(self.points, self.add_point_to_map);
 	};
+
+	// Responds to clicks on the map
+	self.bind_click = function (callback) {
+		google.maps.event.addListener(self.map, 'click', function(e) {
+            callback(e.latLng.lat(), e.latLng.lng());
+        });
+	};
+
 });
