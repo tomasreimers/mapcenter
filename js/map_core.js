@@ -8,7 +8,7 @@ var map_core = new (function () {
 	// Keeps reference to all points objects in the map
 	self.map_points = [];
 
-	// Creates an icon to represent you 
+	// Creates an icon to represent a point
 	self.point_symbol = function (opacity) {
 		return {
 			strokeColor: "#FF0000",
@@ -21,6 +21,19 @@ var map_core = new (function () {
 		};
 	};
 
+	// Creates an icon to represent a center 
+	self.center_symbol = function () {
+		return {
+			strokeColor: "#FFFF00",
+			fillColor: "#FFFF66",
+			fillOpacity: 1,
+			path: google.maps.SymbolPath.CIRCLE,
+			scale: 4,
+			strokeWeight: 1,
+			strokeOpacity: 1
+		};
+	};
+
 	// Adds a point to the array and places a marker on the map  
 	self.add_point = function (point) {
 		var lifespan = (data_core.lifespan + point.timestamp - (new Date()).getTime()) / data_core.lifespan;
@@ -29,6 +42,17 @@ var map_core = new (function () {
 			map: self.map,
 			position: marker_center,
 			icon: self.point_symbol(lifespan)
+		});
+		self.map_points.push(marker);
+	};
+
+	// adds centers
+	self.add_center = function (point) {
+		var marker_center = new google.maps.LatLng(point.lat, point.lng);
+		var marker = new google.maps.Marker({
+			map: self.map,
+			position: marker_center,
+			icon: self.center_symbol()
 		});
 		self.map_points.push(marker);
 	};

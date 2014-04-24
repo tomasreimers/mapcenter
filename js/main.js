@@ -13,6 +13,11 @@ $(document).ready(function () {
 		_.each(data_core.data, function (point) {
 			map_core.add_point(point);
 		});
+		// do centers
+		var centers = cluster_core.cluster(data_core.data);
+		_.each(centers, function (center) {
+			map_core.add_center(center);
+		});
 	};
 
 	setInterval(update, 1000);
