@@ -36,7 +36,7 @@ var map_core = new (function () {
 
 	// Adds a point to the array and places a marker on the map  
 	self.add_point = function (point) {
-		var lifespan = (data_core.lifespan + point.timestamp - (new Date()).getTime()) / data_core.lifespan;
+		var lifespan = point.time_remaining() / data_core.lifespan;
 		var marker_center = new google.maps.LatLng(point.lat, point.lng);
 		var marker = new google.maps.Marker({
 			map: self.map,

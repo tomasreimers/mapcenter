@@ -2,7 +2,8 @@ var cluster_core = new (function () {
 	
 	var self = this;
 
-	self.THRESHOLD = 0.001;
+	self.THRESHOLD = 0.001; // in latlng distance
+	self.ITERATIONS = 10; // amount of times to iterate to get approx
 
 	// implements k-means clustering and returns array of centers
 	self.cluster = function (points) {
@@ -62,7 +63,7 @@ var cluster_core = new (function () {
 			self.adjust_center(closest_party);
 		}
 		// Now reapportion the points to the parties based on new means
-		self.reapportion(parties, 10);
+		self.reapportion(parties, self.ITERATIONS);
 		// Return final list of parties
 		return parties;
  	};

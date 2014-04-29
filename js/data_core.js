@@ -13,10 +13,14 @@ var data_core = new (function () {
 
 	// adds a point to the data
 	self.add_point = function (lat, lng) {
+		var current_time = (new Date()).getTime();
 		var point = {
 			lat: lat,
 			lng: lng,
-			timestamp: (new Date()).getTime()
+			timestamp: current_time,
+			time_remaining: function () {
+				return current_time + self.lifespan - (new Date()).getTime();
+			}
 		};
 
 		self.data.push(point);
@@ -28,9 +32,8 @@ var data_core = new (function () {
 
 	// remove expired points
 	self.clean_points = function () {
-		var current_time = (new Date()).getTime();
 		self.data = _.filter(self.data, function (point) {
-			return (current_time - point.timestamp <= self.lifespan);
+			return (point.time_remaining() >= 0);
 		});
 	};
 

@@ -1,4 +1,6 @@
 $(document).ready(function () {
+	var UPDATE_INTERVAL = 5000; // in ms
+
 	// begin by initializing the map
 	var map_el = $("#mapcanvas")[0];
 	map_core.init_map(map_el);
@@ -20,7 +22,7 @@ $(document).ready(function () {
 		});
 	};
 
-	setInterval(update, 1000);
+	setInterval(update, UPDATE_INTERVAL);
 
 	// bind updating
 	data_core.on_new_point = update;
