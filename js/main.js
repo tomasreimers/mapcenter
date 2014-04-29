@@ -10,15 +10,11 @@ $(document).ready(function () {
 	var update = function () {
 		// clean points
 		data_core.clean_points();
-		// draw
 		map_core.clear_points();
-		_.each(data_core.data, function (point) {
-			map_core.add_point(point);
-		});
-		// do centers
+		// do parties
 		var centers = cluster_core.cluster(data_core.data);
-		_.each(centers, function (center) {
-			map_core.add_center(center);
+		_.each(centers, function (party) {
+			map_core.add_party(party);
 		});
 	};
 
