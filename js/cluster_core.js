@@ -19,6 +19,19 @@ var cluster_core = new (function () {
 	    return parties;
 	}; 
 
+	self.pick_starting_centers = function (num_centers, points) {
+		parties = [];
+		for (var i = 0; i < num_centers; i++) {
+		  	new_party = {
+		    	lat: points[i].lat,
+		    	lng: points[i].lng,
+		    	points: []
+			};
+			parties.push(new_party);
+		}
+		return parties;
+	}
+
 	// checks if all the parties are within a threshold
 	self.all_within_threshold = function (parties) {
 		for (var i = 0; i < parties.length; i++) {
@@ -34,15 +47,7 @@ var cluster_core = new (function () {
   	// calculates centers of k parties and returns objects with the points assigned 
   	self.cluster_with_k = function (k, points) {
 		// find create k initial parties and hold them in an 'parties' array
-		parties = [];
-		for (var i = 0; i < k; i++) {
-		  	new_party = {
-		    	lat: points[i].lat,
-		    	lng: points[i].lng,
-		    	points: []
-			};
-			parties.push(new_party);
-		}
+		parties = self.pick_starting_centers (k, points);
 
 		// 'i' now references the index of the unclustered points.
 		// walk through the remains of the points array and cluster them
@@ -68,29 +73,28 @@ var cluster_core = new (function () {
 		return parties;
  	};
 
-    // recursively reassign points to new parties
-    self.reapportion = function (parties, limit) {
-		if (limit > 0) {
-			// Walk through each point in each party and double check its position
-			for (var p = 0; p < parties.length; p++) {
-				var party = parties[p];
-				for (var i = 0; i < party.points.length; i++) {
-					var point = party.points[i];
-					// Check the distance of this point to each center
-					var cur_dist = self.distance_between(party, point);
-					// Compare with each other party
-					for (var p2 = 0; p2 < parties.length; p2++) {
-						if (p2 != p) {
-							var other_dist = self.distance_between(parties[p2], point);
-							if (other_dist < cur_dist) {
-								// The point needs to change parties
-								point.dist = other_dist;
-								party.points.splice(i,1); // removes from party
-								parties[p2].points.push(point); // add to closer party
-								self.adjust_center(party); // recalcuate mean
-								self.adjust_center(parties[p2]); // and again
+  // recursively reassign points to new parties
+  self.reapportion = function (parties, limit) {
+		// Walk through each point in each party and double check its position
+		for (var p = 0; p < parties.length; p++) {
+			var party = parties[p];
+			for (var i = 0; i < party.points.length; i++) {
+				var point = party.points[i];
+				// Check the distance of this point to each center
+				var cur_dist = self.distance_between(party, point);
+				// Compare with each other party
+				for (var p2 = 0; p2 < parties.length; p2++) {
+					if (p2 != p) { // Dont check against same party
+						var other_dist = self.distance_between(parties[p2], point);
+						if (other_dist < cur_dist) {
+							// The point needs to change parties
+							point.dist = other_dist;
+							party.points.splice(i,1); // removes from party
+							parties[p2].points.push(point); // add to closer party
+							self.adjust_center(party); // recalcuate mean
+							self.adjust_center(parties[p2]); // and again
+							if (limit > 0)
 								self.reapportion(parties, limit-1) // recurse
-							}
 						}
 					}
 				}
