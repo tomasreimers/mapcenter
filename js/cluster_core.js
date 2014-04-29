@@ -3,7 +3,7 @@ var cluster_core = new (function () {
 	var self = this;
 
 	self.THRESHOLD = 0.001; // in latlng distance
-	self.ITERATIONS = 10; // amount of times to iterate to get approx
+	self.ITERATIONS = 100; // amount of times to iterate to get approx
 
 	// implements k-means clustering and returns array of centers
 	self.cluster = function (points) {
@@ -100,10 +100,20 @@ var cluster_core = new (function () {
 	};
 
 	self.adjust_center = function (party) {
-		var latSum = _.reduceRight(party.points, function(acc, p) {return acc + p.lat}, 0);
-		var lngSum = _.reduceRight(party.points, function(acc, p) {return acc + p.lng}, 0);
-		party.lat = latSum / party.points.length;
-		party.lng = lngSum / party.points.length;
+		// weight mean based of of time remaining for each point
+		var totalTime = 0;
+		var latSum = 0;
+		var lngSum = 0;
+		_.each(party.points, function (point) {
+			var time = point.time_remaining();
+			if (time > 0) {
+				totalTime += time;
+				latSum += point.lat * time;
+				lngSum += point.lng * time;
+			}
+		});
+		party.lat = latSum / totalTime;
+		party.lng = lngSum / totalTime;
 	};
 
 });
