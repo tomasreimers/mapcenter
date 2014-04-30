@@ -3,7 +3,7 @@ var cluster_core = new (function () {
 	var self = this;
 
 	self.THRESHOLD = 0.001; // in latlng distance
-	self.ITERATIONS = 100; // amount of times to iterate to get approx
+	self.ITERATIONS = 20 // amount of times to iterate to get approx
 
 	// implements k-means clustering and returns array of centers
 	self.cluster = function (points) {
@@ -16,18 +16,30 @@ var cluster_core = new (function () {
 	    	k++;
 	    	parties = self.cluster_with_k(k, points);  
 	    } while (!self.all_within_threshold(parties));
+
+	    while (self.clusters_too_close(parties)){
+	    	console.log(k + " clusters too close, decreasing");
+	    	k--;
+	    	parties = self.cluster_with_k(k, points);  
+	    }
+	    
 	    return parties;
 	}; 
 
 	self.pick_starting_centers = function (num_centers, points) {
 		parties = [];
-		for (var i = 0; i < num_centers; i++) {
+		pointsCopy = points.slice(0);
+
+		while (num_centers > 0 && pointsCopy.length > 0) {
+			var i = Math.floor(Math.random()*pointsCopy.length);
 		  	new_party = {
-		    	lat: points[i].lat,
-		    	lng: points[i].lng,
+		    	lat: pointsCopy[i].lat,
+		    	lng: pointsCopy[i].lng,
 		    	points: []
 			};
 			parties.push(new_party);
+			num_centers --;
+			pointsCopy.splice(i,1);
 		}
 		return parties;
 	};
@@ -43,6 +55,16 @@ var cluster_core = new (function () {
 	    }
 	    return true;
 	};
+
+	self.clusters_too_close = function (parties) {
+		for (var p1 = 0; p1 < parties.length; p1++) {
+			for (var p2 = 0; p2 < parties.length; p2++) {
+				if (p1 != p2 && self.distance_between(parties[p1], parties[p2]) < self.threshold)
+					return true;
+			}
+		}
+		return false;
+	}
 
   	// calculates centers of k parties and returns objects with the points assigned 
   	self.cluster_with_k = function (k, points) {
