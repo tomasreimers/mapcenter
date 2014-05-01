@@ -2,7 +2,7 @@ var cluster_core = new (function () {
 	
 	var self = this;
 
-	self.THRESHOLD = 0.001; // in latlng distance
+	self.THRESHOLD = 0.0001; // in latlng distance
 	self.ITERATIONS = 20 // amount of times to iterate to get approx
 
 	// implements k-means clustering and returns array of centers
