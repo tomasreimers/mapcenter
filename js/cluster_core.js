@@ -12,13 +12,15 @@ var cluster_core = new (function () {
 
 	    var k = 0;
 	    var parties = [];
+	    // count up while there aren't sufficient parties
 	    do {
 	    	k++;
 	    	parties = self.cluster_with_k(k, points);  
 	    } while (!self.all_within_threshold(parties));
 
+	    // if there are too many parties (problem with approximating the k in k means,
+	   	// then try again with different randomly chosen centers)
 	    while (self.clusters_too_close(parties)){
-	    	console.log(k + " clusters too close, decreasing");
 	    	k--;
 	    	parties = self.cluster_with_k(k, points);  
 	    }
@@ -26,20 +28,21 @@ var cluster_core = new (function () {
 	    return parties;
 	}; 
 
+	// picks a certain number of points to be centroids from an array of points randomly
 	self.pick_starting_centers = function (num_centers, points) {
 		parties = [];
-		pointsCopy = points.slice(0);
+		points_copy = points.slice(0);
 
-		while (num_centers > 0 && pointsCopy.length > 0) {
-			var i = Math.floor(Math.random()*pointsCopy.length);
+		while (num_centers > 0 && points_copy.length > 0) {
+			var i = Math.floor(Math.random()*points_copy.length);
 		  	new_party = {
 		    	lat: pointsCopy[i].lat,
 		    	lng: pointsCopy[i].lng,
 		    	points: []
 			};
 			parties.push(new_party);
-			num_centers --;
-			pointsCopy.splice(i,1);
+			num_centers--;
+			points_copy.splice(i,1);
 		}
 		return parties;
 	};
@@ -56,6 +59,7 @@ var cluster_core = new (function () {
 	    return true;
 	};
 
+	// check if two parties are within the threshold (i.e. there are too many parties)
 	self.clusters_too_close = function (parties) {
 		for (var p1 = 0; p1 < parties.length; p1++) {
 			for (var p2 = 0; p2 < parties.length; p2++) {
@@ -83,6 +87,7 @@ var cluster_core = new (function () {
 		
  	};
 
+ 	// assigns points to closest party 
  	self.assign_to_parties = function (points, parties) {
  		// assign everything a party to start
 		_.each(points, function (point) {
@@ -102,6 +107,7 @@ var cluster_core = new (function () {
 		return parties;
  	};
 
+ 	// duplicates the centers array and removes previous points from it
  	self.clean_centers = function (parties) {
  		var new_parties = [];
  		_.each(parties, function (party) {
@@ -114,6 +120,11 @@ var cluster_core = new (function () {
  		return new_parties;
  	};
 
+ 	// finds the distance between two points
+ 	
+ 	// we understand that globally using lat/lng as distance is a terrible idea -
+ 	// but within a small city (i.e. cambridge) the curvature of the earth should
+ 	// not affect distance too much.
 	self.distance_between = function (p1, p2) {
 		var width = p1.lng - p2.lng;
 		var height = p1.lat - p2.lat;
@@ -121,6 +132,7 @@ var cluster_core = new (function () {
 		return dist;
 	};
 
+	// computes the weighted center of a party based on it's points
 	self.adjust_center = function (party) {
 		// weight mean based of of time remaining for each point
 		var totalTime = 0;

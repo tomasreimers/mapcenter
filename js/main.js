@@ -1,4 +1,5 @@
 $(document).ready(function () {
+	
 	var UPDATE_INTERVAL = 5000; // in ms
 
 	// begin by initializing the map
